@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "556380855257",
+    "project_id": "facegate-3f84d",
+    "storage_bucket": "facegate-3f84d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:556380855257:android:d7c5d1e16aceca0122d7c8",
+        "android_client_info": {
+          "package_name": "com.example.facegate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRaufz3bi68SyPCI_0ssbDt_GKNiiT1aQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
