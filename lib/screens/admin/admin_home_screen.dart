@@ -1,3 +1,5 @@
+
+import 'package:facegate/utils/constants.dart';
 import 'package:facegate/utils/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -12,7 +14,7 @@ class AdminHomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin Paneli'),
+        title: const Text(ProjectConstants.adminPanel),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
