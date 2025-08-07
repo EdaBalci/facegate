@@ -43,6 +43,13 @@ class AdminHomeScreen extends StatelessWidget {
               icon: const Icon(Icons.pending_actions),
               label: const Text('Onay Bekleyen Personeller'),
             ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+            icon: const Icon(Icons.assignment_ind),
+            label: const Text('Görev Atama'),
+              onPressed: () => context.go('/admin/assign-roles'),
+),
+
           ],
         ),
       ),

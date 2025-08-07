@@ -53,6 +53,8 @@ class AuthRepository {
       await _auth.signOut(); // onaylı değilse çıkış yapılır
       return false;
     }
+  
+
   }
 
   //Rolü öğrenmek için, firestoreda rol alanı okunur
