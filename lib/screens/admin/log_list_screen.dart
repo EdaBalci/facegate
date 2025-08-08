@@ -72,7 +72,7 @@ class _LogListScreenState extends State<LogListScreen> {
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2020),
-      lastDate: DateTime(2100),
+      lastDate: DateTime.now(), cancelText: 'İptal'
     );
 
     if (pickedDate != null) {

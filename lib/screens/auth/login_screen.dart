@@ -1,3 +1,4 @@
+import 'package:facegate/widgets/custom_text_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -69,23 +70,17 @@ class _LoginScreenState extends State<LoginScreen> {
               key: _formKey,
               child: Column(
                 children: [
-                  TextFormField( //kullanıcıdan email şifre alır
-                    controller: _emailController,
-                    decoration: const InputDecoration(labelText: 'Email'),
-                    validator: (value) => value != null && value.contains('@') //email geçerli mi kontrolü
-                        ? null
-                        : 'Geçerli bir email girin',
-                  ),
+                 /// The `TextFormField` widget in the provided code snippet is used to get input from
+                 /// the user for the email address. Here's a breakdown of what it does:
+                  CustomTextFormField(textEditingController: _emailController,labelText: "Email",validator: (value) => value != null && value.contains('@') //email geçerli mi kontrolü
+          ? null
+          : 'Geçerli bir email girin',),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passwordController,
-                    decoration: const InputDecoration(labelText: 'Şifre'),
-                    obscureText: true, //şifreyi gizlemek için
-                    validator: (value) =>
+                  CustomTextFormField(textEditingController: _passwordController,labelText:  "Şifre", obscureText: true,validator: (value) =>
                         value != null && value.length >= 6
                             ? null
-                            : 'En az 6 karakter girin',
-                  ),
+                            : 'En az 6 karakter girin',),
+               
                   const SizedBox(height: 24),
                   isLoading // AuthLoading state aktif değilse 
                   //buton aktif olur ve onPressed ile _onLoginPressed() çalışır
@@ -111,5 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
+
 
 

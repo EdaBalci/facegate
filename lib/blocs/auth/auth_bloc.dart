@@ -3,7 +3,7 @@ import 'package:facegate/repositories/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
-///Bu dosyada kullanıcının giriş ve kayıt işlemleriniyönetiyorum
+///Bu dosyada kullanıcının giriş ve kayıt işlemlerini yönetiyorum
 
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {

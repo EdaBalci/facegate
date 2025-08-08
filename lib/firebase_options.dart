@@ -83,4 +83,5 @@ class DefaultFirebaseOptions {
     authDomain: 'facegate-3f84d.firebaseapp.com',
     storageBucket: 'facegate-3f84d.firebasestorage.app',
   );
+
 }

@@ -20,7 +20,7 @@ class _AssignRolesScreenState extends State<AssignRolesScreen> {
 
   final TextEditingController _searchController = TextEditingController();
 
-  // Atanabilecek görevler
+ 
   final List<String> _roles = [
     'Sunucu Odası Operatörü',
     'Veri Güvenliği Uzmanı',
@@ -30,16 +30,16 @@ class _AssignRolesScreenState extends State<AssignRolesScreen> {
   void initState() {
     super.initState();
     _fetchApprovedPersonnel();
-    _searchController.addListener(_onSearchChanged); // arama kutusu dinleniyor
+    _searchController.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
-    _searchController.dispose(); // bellek sızıntısını önle
+    _searchController.dispose();
     super.dispose();
   }
 
-  // Firestore'dan onaylı personelleri getir, admin hariç
+  //firestoredan onaylı personelleri getir, admin hariç
   Future<void> _fetchApprovedPersonnel() async {
     final currentUserEmail = _auth.currentUser?.email;
 
@@ -49,18 +49,18 @@ class _AssignRolesScreenState extends State<AssignRolesScreen> {
         .get();
 
     final filtered = snapshot.docs.where((doc) {
-      final data = doc.data() as Map<String, dynamic>;
+      final data = doc.data();
       return data['email'] != currentUserEmail;
     }).toList();
 
     setState(() {
       _personnel = filtered;
-      _filteredPersonnel = filtered; // ilk yüklemede tümünü göster
+      _filteredPersonnel = filtered; 
       _isLoading = false;
     });
   }
 
-  // Email ile filtreleme
+  //Email ile filtreleme yapma
   void _onSearchChanged() {
     final query = _searchController.text.toLowerCase();
 
@@ -73,7 +73,7 @@ class _AssignRolesScreenState extends State<AssignRolesScreen> {
     });
   }
 
-  // Görevi Firestore'da güncelle
+  //Görevi firestoreda güncellemek için
   Future<void> _assignRole(String userId, String newRole) async {
     await _firestore.collection('users').doc(userId).update({
       'gorev': newRole,
@@ -83,7 +83,7 @@ class _AssignRolesScreenState extends State<AssignRolesScreen> {
       const SnackBar(content: Text('Görev başarıyla atandı.')),
     );
 
-    _fetchApprovedPersonnel(); // Listeyi güncelle
+    _fetchApprovedPersonnel(); 
   }
 
   @override
