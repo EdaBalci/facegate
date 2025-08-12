@@ -5,6 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:facegate/blocs/auth/auth_bloc.dart';
 import 'package:facegate/blocs/auth/auth_event.dart';
 import 'package:facegate/blocs/auth/auth_state.dart';
+import 'package:facegate/widgets/language_switcher.dart';
+
+// i18n
+import 'package:easy_localization/easy_localization.dart';
+import 'package:facegate/l10n/locale_keys.g.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,22 +19,23 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>(); //validate kontrolü yapar
-  final _emailController = TextEditingController(); //input değeri okumak için
+  final _formKey = GlobalKey<FormState>(); // validate kontrolü yapar
+  final _emailController = TextEditingController(); // input değeri okumak için
   final _passwordController = TextEditingController();
 
-
-//form geçerliyse AuthLoginRequested eventi AuthBloc'a gönderilir
+  // form geçerliyse AuthLoginRequested eventi AuthBloc'a gönderilir
   void _onLoginPressed() {
     if (_formKey.currentState!.validate()) {
-      context.read<AuthBloc>().add(AuthLoginRequested(
-            email: _emailController.text,
-            password: _passwordController.text,
-          ));
+      context.read<AuthBloc>().add(
+            AuthLoginRequested(
+              email: _emailController.text.trim(),
+              password: _passwordController.text,
+            ),
+          );
     }
   }
 
-//memory leak oluşmaması için sayfa kapatılırken temizlik
+  // memory leak oluşmaması için sayfa kapatılırken temizlik
   @override
   void dispose() {
     _emailController.dispose();
@@ -41,28 +47,32 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Giriş Yap'),
+        // "Giriş Yap" / "Sign In"
+        title: Text(LocaleKeys.auth_login_title.tr()),
+        actions: const [LanguageSwitcher()],
         centerTitle: true,
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
-      listener: (context, state) { //AuthState değiştiğince çalışıyor
-      if (state is AuthSuccess) {
-      if (state.role == 'admin') {
-      context.go('/admin/home');
-      } else {
-      context.go('/personnel/home');
-     }
-     } else if (state is AuthWaitingApproval) {
-     context.go('/waiting');
-     } else if (state is AuthFailure) {
-     ScaffoldMessenger.of(context).showSnackBar(
-     SnackBar(content: Text(state.message)),
-    );
-  }
-},
-
-        builder: (context, state) { //AuthState değiştirdikçe UI'ı tekrar oluşturur
-          final isLoading = state is AuthLoading; //state AuthLoading ise buton yerine loading spinner gösterilecek
+        // AuthState değiştiğinde çalışır
+        listener: (context, state) {
+          if (state is AuthSuccess) {
+            if (state.role == 'admin') {
+              context.go('/admin/home');
+            } else {
+              context.go('/personnel/home');
+            }
+          } else if (state is AuthWaitingApproval) {
+            context.go('/waiting');
+          } else if (state is AuthFailure) {
+            // Backend'ten gelen mesajı gösteriyoruz (i18n değilse bile)
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          }
+        },
+        // AuthState değiştikçe UI'ı tekrar oluşturur
+        builder: (context, state) {
+          final isLoading = state is AuthLoading; // loading sırasında buton yerine spinner
 
           return Padding(
             padding: const EdgeInsets.all(20),
@@ -70,32 +80,42 @@ class _LoginScreenState extends State<LoginScreen> {
               key: _formKey,
               child: Column(
                 children: [
-                 /// The `TextFormField` widget in the provided code snippet is used to get input from
-                 /// the user for the email address. Here's a breakdown of what it does:
-                  CustomTextFormField(textEditingController: _emailController,labelText: "Email",validator: (value) => value != null && value.contains('@') //email geçerli mi kontrolü
-          ? null
-          : 'Geçerli bir email girin',),
+                  // Email
+                  CustomTextFormField(
+                    textEditingController: _emailController,
+                    labelText: LocaleKeys.auth_email.tr(),
+                    validator: (value) => (value != null && value.contains('@'))
+                        ? null
+                        : LocaleKeys.auth_email_invalid.tr(),
+                  ),
                   const SizedBox(height: 16),
-                  CustomTextFormField(textEditingController: _passwordController,labelText:  "Şifre", obscureText: true,validator: (value) =>
-                        value != null && value.length >= 6
-                            ? null
-                            : 'En az 6 karakter girin',),
-               
+
+                  // Password
+                  CustomTextFormField(
+                    textEditingController: _passwordController,
+                    labelText: LocaleKeys.auth_password.tr(),
+                    obscureText: true,
+                    validator: (value) => (value != null && value.length >= 6)
+                        ? null
+                        : LocaleKeys.auth_password_min_chars.tr(),
+                  ),
+
                   const SizedBox(height: 24),
-                  isLoading // AuthLoading state aktif değilse 
-                  //buton aktif olur ve onPressed ile _onLoginPressed() çalışır
+
+                  // Login button / spinner
+                  isLoading
                       ? const CircularProgressIndicator()
                       : ElevatedButton(
                           onPressed: _onLoginPressed,
-                          child: const Text('Giriş Yap'),
+                          child: Text(LocaleKeys.auth_login_button.tr()),
                         ),
+
                   const SizedBox(height: 12),
+
+                  // Register link
                   TextButton(
-                    onPressed: () {
-                      context.push('/register'); //kayıt ol'a bastığında register sayfasına gider
-                      //push sayesinde geri gelmesi mümkün
-                    },
-                    child: const Text('Hesabın yok mu? Kayıt ol'),
+                    onPressed: () => context.push('/register'),
+                    child: Text(LocaleKeys.auth_register_link.tr()),
                   ),
                 ],
               ),
@@ -106,7 +126,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-
-
-
-

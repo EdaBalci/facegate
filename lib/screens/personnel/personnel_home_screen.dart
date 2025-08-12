@@ -1,10 +1,13 @@
 import 'package:facegate/utils/helpers.dart';
 import 'package:flutter/material.dart';
 import 'package:facegate/repositories/log_repository.dart';
+import 'package:facegate/widgets/language_switcher.dart';
 
-////Eğer kullanıcı AuthBloc üzerinden AuthSuccess("personnel") durumu ile giriş yaptıysa
+// i18n
+import 'package:easy_localization/easy_localization.dart';
+import 'package:facegate/l10n/locale_keys.g.dart';
 
-
+/// Eğer kullanıcı AuthBloc üzerinden AuthSuccess("personnel") durumu ile giriş yaptıysa
 class PersonnelHomeScreen extends StatefulWidget {
   const PersonnelHomeScreen({super.key});
 
@@ -13,40 +16,44 @@ class PersonnelHomeScreen extends StatefulWidget {
 }
 
 class _PersonnelHomeScreenState extends State<PersonnelHomeScreen> {
-  final LogRepository _logRepository = LogRepository(); //firestore'a log yazmak için
+  final LogRepository _logRepository = LogRepository(); // firestore'a log yazmak için
 
   @override
   void initState() {
     super.initState();
-    _logEntry(); //giriş logunu firestorea yazan fonk çağırır
+    _logEntry(); // giriş logunu firestore'a yaz
   }
 
   Future<void> _logEntry() async {
-    await _logRepository.logAction("entry"); //giriş yapan kullanıcıyı logs koleksiyonuna kaydeder
+    await _logRepository.logAction("entry"); // giriş yapan kullanıcıyı logs koleksiyonuna kaydeder
   }
 
   Future<void> _logExit(BuildContext context) async {
-    await _logRepository.logAction("exit");//firestorea çıkış logu gönderir
-    signOutUser(context); // çıkış yaptıktan sonra oturumu kapat
+    await _logRepository.logAction("exit"); // firestore'a çıkış logu gönder
+    signOutUser(context); // ardından oturumu kapat
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Personel Paneli'),
+        // "Personel Paneli" / "Personnel Panel"
+        title: Text(LocaleKeys.personnel_panel_title.tr()),
         centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => _logExit(context), //butona basınca çıkış logu gönderir
-          ),
-        ],
+        const LanguageSwitcher(),
+        IconButton(
+        tooltip: LocaleKeys.auth_logout.tr(),
+        icon: const Icon(Icons.logout),
+        onPressed: () => _logExit(context),
+   ),
+ ],
       ),
-      body: const Center(
+      body: Center(
         child: Text(
-          ' ',
-          style: TextStyle(fontSize: 24),
+            LocaleKeys.personnel_home_welcome.tr(),
+          style: const TextStyle(fontSize: 24),
+          textAlign: TextAlign.center,
         ),
       ),
     );

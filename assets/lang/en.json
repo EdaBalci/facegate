@@ -1,0 +1,73 @@
+{
+  "app": { "title": "FaceGate" },
+  "common": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "save": "Save",
+    "search": "Search",
+    "search_by_email": "Search by email",
+    "no_results": "No results found.",
+    "unknown": "Unknown"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "sign_in_error": "Could not sign in",
+    "login_title": "Sign In",
+    "login_button": "Sign In",
+    "register_link": "Don't have an account? Register",
+    "email_invalid": "Enter a valid email",
+    "password_min_chars": "Enter at least 6 characters",
+    "register_title": "Register",
+    "register_button": "Register",
+    "login_link": "Already have an account? Sign in",
+    "waiting_title": "Pending Approval",
+    "waiting_message": "Your application is awaiting admin approval"
+
+
+  },
+  "admin": {
+    "panel_title": "Admin Panel",
+    "roles": {
+      "operator": "Server Room Operator",
+      "security": "Data Security Specialist",
+      "assign_role": "Assign Role",
+      "current_role": "Current Role: {role}",
+      "assign_role_title": "Assign Role",
+      "assign_role_hint": "Assign role",
+      "not_assigned": "Not assigned",
+      "assigned_success": "Role assigned successfully."
+    }
+  },
+  "logs": {
+    "title": "Access Logs",
+    "entry": "Entry",
+    "exit": "Exit",
+    "empty": "No logs yet",
+    "count": "Total: {n}",
+    "filter": "Filter",
+    "close_filter": "Close Filter",
+    "search_by_email": "Search by email",
+    "pick_date": "Pick a date",
+    "no_date_selected": "No date selected",
+    "no_results": "No results found.",
+    "unknown_email": "Unknown"
+  },
+  "personnel": {
+    "list_title": "Approved Personnel",
+    "approve": "Approve",
+    "reject": "Reject",
+    "pending": "Pending Approvals",
+    "pending_empty": "No personnel awaiting approval.",
+    "approved_success": "User approved.",
+    "rejected_success": "User rejected.",
+    "panel_title": "Personnel Panel",
+    "home_welcome": "Your entry has been logged."
+  },
+  "errors": {
+    "network": "Network error",
+    "unknown": "Unexpected error"
+  }
+}

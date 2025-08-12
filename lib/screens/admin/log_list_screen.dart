@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:facegate/repositories/log_repository.dart';
 import 'package:go_router/go_router.dart';
+import 'package:facegate/widgets/language_switcher.dart';
 
+// i18n
+import 'package:easy_localization/easy_localization.dart';
+import 'package:intl/intl.dart';
+import 'package:facegate/l10n/locale_keys.g.dart';
 
 class LogListScreen extends StatefulWidget {
   const LogListScreen({super.key});
@@ -13,14 +18,20 @@ class LogListScreen extends StatefulWidget {
 class _LogListScreenState extends State<LogListScreen> {
   final LogRepository _logRepository = LogRepository();
 
-  List<Map<String, dynamic>> _logs = []; // Firestore'dan gelen tüm log kayıtlarını tutar
-  List<Map<String, dynamic>> _filteredLogs = []; // Email ve tarihe göre filtrelenmiş loglar
+  // Firestore'dan gelen tüm log kayıtlarını tutar
+  List<Map<String, dynamic>> _logs = [];
+  // Email ve tarihe göre filtrelenmiş loglar
+  List<Map<String, dynamic>> _filteredLogs = [];
 
-  bool _isLoading = true; // Veriler yüklenirken loading spinner gösterilecek
+  // Veriler yüklenirken loading spinner gösterilecek
+  bool _isLoading = true;
 
-  final TextEditingController _searchController = TextEditingController(); // Arama kutusu kontrolü
-  bool _showFilters = false; // Filtreleme alanı gösterilsin mi?
-  DateTime? _selectedDate; // Seçilen tarih (tarih filtresi için)
+  // Arama kutusu kontrolü
+  final TextEditingController _searchController = TextEditingController();
+  // Filtreleme alanı gösterilsin mi?
+  bool _showFilters = false;
+  // Seçilen tarih (tarih filtresi için)
+  DateTime? _selectedDate;
 
   @override
   void initState() {
@@ -72,7 +83,9 @@ class _LogListScreenState extends State<LogListScreen> {
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2020),
-      lastDate: DateTime.now(), cancelText: 'İptal'
+      lastDate: DateTime.now(),
+      cancelText: LocaleKeys.common_cancel.tr(), // i18n
+      // locale: context.locale, // Gerek yok; MaterialApp.locale zaten set edildi.
     );
 
     if (pickedDate != null) {
@@ -83,26 +96,29 @@ class _LogListScreenState extends State<LogListScreen> {
     }
   }
 
-  // Firestore'dan gelen timestamp verisini formatlı stringe çevirir
-  String _formatTimestamp(dynamic timestamp) {
-    if (timestamp == null) return 'Zaman Yok';
+  // Firestore'dan gelen timestamp verisini locale'e duyarlı formatlı stringe çevirir
+  String _formatTimestamp(BuildContext context, dynamic timestamp) {
+    if (timestamp == null) return LocaleKeys.logs_empty.tr();
     final dt = timestamp.toDate();
-    return '${dt.day}.${dt.month}.${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+    final locale = context.locale.toString(); // 'tr' | 'en'
+    // İstersen pattern'i locale'e göre değiştirebiliriz
+    return DateFormat('dd.MM.yyyy HH:mm', locale).format(dt);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Giriş / Çıkış Kayıtları'),
+        title: Text(LocaleKeys.logs_title.tr()),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/admin/home'), // Admin paneline geri dön
         ),
+        actions: const [LanguageSwitcher()],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator()) // Veri yüklenirken spinner göster
+          ? const Center(child: CircularProgressIndicator()) // Veri yüklenirken spinner
           : Column(
               children: [
                 // 🔽 Filtreleme alanını açıp kapatma butonu
@@ -112,20 +128,23 @@ class _LogListScreenState extends State<LogListScreen> {
                     alignment: Alignment.centerRight,
                     child: ElevatedButton.icon(
                       icon: Icon(_showFilters ? Icons.filter_alt_off : Icons.filter_alt),
-                      label: Text(_showFilters ? 'Filtreyi Kapat' : 'Filtrele'),
+                      label: Text(
+                        _showFilters
+                            ? LocaleKeys.logs_close_filter.tr()
+                            : LocaleKeys.logs_filter.tr(),
+                      ),
                       onPressed: () {
                         setState(() {
-                           _showFilters = !_showFilters;
+                          _showFilters = !_showFilters;
 
-                           // Filtre kapatılıyorsa tüm filtreleri sıfırla
-                           if (!_showFilters) {
-                              _searchController.clear();      // Arama kutusunu temizle
-                              _selectedDate = null;           // Tarih filtresini sıfırla
-                             _filteredLogs = _logs;          // Tüm logları tekrar göster
+                          // Filtre kapatılıyorsa tüm filtreleri sıfırla
+                          if (!_showFilters) {
+                            _searchController.clear(); // Arama kutusunu temizle
+                            _selectedDate = null; // Tarih filtresini sıfırla
+                            _filteredLogs = _logs; // Tüm logları tekrar göster
                           }
-                       });
-                    },
-
+                        });
+                      },
                     ),
                   ),
                 ),
@@ -136,10 +155,10 @@ class _LogListScreenState extends State<LogListScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: TextField(
                       controller: _searchController,
-                      decoration: const InputDecoration(
-                        labelText: 'Email ile ara',
-                        prefixIcon: Icon(Icons.search),
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: LocaleKeys.logs_search_by_email.tr(),
+                        prefixIcon: const Icon(Icons.search),
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                   ),
@@ -149,14 +168,14 @@ class _LogListScreenState extends State<LogListScreen> {
                     child: InkWell(
                       onTap: () => _pickDate(context),
                       child: InputDecorator(
-                        decoration: const InputDecoration(
-                          labelText: 'Tarih seç',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.calendar_today),
+                        decoration: InputDecoration(
+                          labelText: LocaleKeys.logs_pick_date.tr(),
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.calendar_today),
                         ),
                         child: Text(
                           _selectedDate == null
-                              ? 'Tarih seçilmedi'
+                              ? LocaleKeys.logs_no_date_selected.tr()
                               : '${_selectedDate!.day}.${_selectedDate!.month}.${_selectedDate!.year}',
                         ),
                       ),
@@ -168,23 +187,27 @@ class _LogListScreenState extends State<LogListScreen> {
                 // Giriş/çıkış loglarının listesi
                 Expanded(
                   child: _filteredLogs.isEmpty
-                      ? const Center(child: Text('Sonuç bulunamadı.')) // Arama sonucu yoksa
+                      ? Center(child: Text(LocaleKeys.logs_no_results.tr()))
                       : ListView.builder(
                           itemCount: _filteredLogs.length,
                           itemBuilder: (context, index) {
                             final log = _filteredLogs[index];
+                            final actionIsEntry = log['action'] == 'entry';
+                            final email = (log['email'] as String?)?.trim();
+                            final when = _formatTimestamp(context, log['timestamp']);
+
                             return ListTile(
                               leading: Icon(
-                                log['action'] == 'entry'
-                                    ? Icons.login
-                                    : Icons.logout,
-                                color: log['action'] == 'entry'
-                                    ? Colors.green
-                                    : Colors.red,
+                                actionIsEntry ? Icons.login : Icons.logout,
+                                color: actionIsEntry ? Colors.green : Colors.red,
                               ),
-                              title: Text(log['email'] ?? 'Bilinmeyen'),
+                              title: Text(
+                                email?.isNotEmpty == true
+                                    ? email!
+                                    : LocaleKeys.logs_unknown_email.tr(),
+                              ),
                               subtitle: Text(
-                                '${log['action'] == 'entry' ? 'Giriş' : 'Çıkış'} • ${_formatTimestamp(log['timestamp'])}',
+                                '${actionIsEntry ? LocaleKeys.logs_entry.tr() : LocaleKeys.logs_exit.tr()} • $when',
                               ),
                             );
                           },

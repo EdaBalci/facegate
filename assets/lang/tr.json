@@ -1,0 +1,72 @@
+{
+  "app": { "title": "FaceGate" },
+  "common": {
+    "ok": "Tamam",
+    "cancel": "İptal",
+    "save": "Kaydet",
+    "search": "Ara",
+    "search_by_email": "Email ile ara",
+    "no_results": "Sonuç bulunamadı.",
+    "unknown": "Bilinmeyen"
+  },
+  "auth": {
+    "login": "Giriş",
+    "logout": "Çıkış",
+    "email": "E-posta",
+    "password": "Şifre",
+    "sign_in_error": "Giriş yapılamadı",
+    "login_title": "Giriş Yap",
+    "login_button": "Giriş Yap",
+    "register_link": "Hesabın yok mu? Kayıt ol",
+    "email_invalid": "Geçerli bir email girin",
+    "password_min_chars": "En az 6 karakter girin",
+    "register_title": "Kayıt Ol",
+    "register_button": "Kayıt Ol",
+    "login_link": "Zaten hesabın var mı? Giriş yap",
+    "waiting_title": "Onay Bekleniyor",
+    "waiting_message": "Başvurunuz admin onayı bekliyor"
+
+  },
+  "admin": {
+    "panel_title": "Yönetici Paneli",
+    "roles": {
+      "operator": "Sunucu Odası Operatörü",
+      "security": "Veri Güvenliği Uzmanı",
+      "assign_role": "Rol Ata",
+      "current_role": "Mevcut Rol: {role}",
+      "assign_role_title": "Görev Atama",
+      "assign_role_hint": "Görev ata",
+      "not_assigned": "Atanmadı",
+      "assigned_success": "Görev başarıyla atandı."
+    }
+  },
+  "logs": {
+    "title": "Giriş / Çıkış Kayıtları",
+    "entry": "Giriş",
+    "exit": "Çıkış",
+    "empty": "Henüz kayıt yok",
+    "count": "Toplam: {n}",
+    "filter": "Filtrele",
+    "close_filter": "Filtreyi Kapat",
+    "search_by_email": "Email ile ara",
+    "pick_date": "Tarih seç",
+    "no_date_selected": "Tarih seçilmedi",
+    "no_results": "Sonuç bulunamadı.",
+    "unknown_email": "Bilinmeyen"
+  },
+  "personnel": {
+    "list_title": "Onaylı Personel",
+    "approve": "Onayla",
+    "reject": "Reddet",
+    "pending": "Onay Bekleyen Personeller",
+    "pending_empty": "Onay bekleyen personel yok.",
+    "approved_success": "Kullanıcı onaylandı.",
+    "rejected_success": "Kullanıcı reddedildi.",
+    "panel_title": "Personel Paneli",
+    "home_welcome": "Girişiniz kaydedildi."
+  },
+  "errors": {
+    "network": "Ağ hatası",
+    "unknown": "Beklenmeyen hata"
+  }
+}

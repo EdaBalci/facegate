@@ -4,6 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:facegate/blocs/auth/auth_bloc.dart';
 import 'package:facegate/blocs/auth/auth_event.dart';
 import 'package:facegate/blocs/auth/auth_state.dart';
+import 'package:facegate/widgets/language_switcher.dart';
+
+// i18n
+import 'package:easy_localization/easy_localization.dart';
+import 'package:facegate/l10n/locale_keys.g.dart';
+
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -17,13 +23,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
 
   void _onRegisterPressed() {
-    //AuthRegisterRequested event’i AuthBloc'a gönderilir
-    //Bu event sayesinde firebasde kayıt başlar
+    // AuthRegisterRequested event’i AuthBloc'a gönderilir (Firebase kaydı başlatır)
     if (_formKey.currentState!.validate()) {
-      context.read<AuthBloc>().add(AuthRegisterRequested(
-            email: _emailController.text,
-            password: _passwordController.text,
-          ));
+      context.read<AuthBloc>().add(
+            AuthRegisterRequested(
+              email: _emailController.text.trim(),
+              password: _passwordController.text,
+            ),
+          );
     }
   }
 
@@ -38,7 +45,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kayıt Ol'),
+        // "Kayıt Ol" / "Register"
+        title: Text(LocaleKeys.auth_register_title.tr()),
+        actions: const [LanguageSwitcher()],
         centerTitle: true,
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
@@ -46,6 +55,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           if (state is AuthWaitingApproval) {
             context.go('/waiting');
           } else if (state is AuthFailure) {
+            // Backend mesajını göster (i18n dışı gelebilir)
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
             );
@@ -60,37 +70,48 @@ class _RegisterScreenState extends State<RegisterScreen> {
               key: _formKey,
               child: Column(
                 children: [
+                  // Email
                   TextFormField(
                     controller: _emailController,
-                    decoration: const InputDecoration(labelText: 'Email'),
-                    validator: (value) => value != null && value.contains('@')
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      labelText: LocaleKeys.auth_email.tr(),
+                    ),
+                    validator: (value) => (value != null && value.contains('@'))
                         ? null
-                        : 'Geçerli bir email girin',
+                        : LocaleKeys.auth_email_invalid.tr(),
                   ),
                   const SizedBox(height: 16),
+
+                  // Password
                   TextFormField(
                     controller: _passwordController,
-                    decoration: const InputDecoration(labelText: 'Şifre'),
+                    decoration: InputDecoration(
+                      labelText: LocaleKeys.auth_password.tr(),
+                    ),
                     obscureText: true,
                     validator: (value) =>
-                        value != null && value.length >= 6
+                        (value != null && value.length >= 6)
                             ? null
-                            : 'En az 6 karakter girin',
+                            : LocaleKeys.auth_password_min_chars.tr(),
                   ),
+
                   const SizedBox(height: 24),
-                  isLoading //State AuthLoading ise spinner gösteriliyor değilse kayıt işlemi yapılıyor
-                      ? const CircularProgressIndicator(): //True ise
-                       ElevatedButton( //false ise
+
+                  // Register button / spinner
+                  isLoading
+                      ? const CircularProgressIndicator()
+                      : ElevatedButton(
                           onPressed: _onRegisterPressed,
-                          child: const Text('Kayıt Ol'),
+                          child: Text(LocaleKeys.auth_register_button.tr()),
                         ),
+
                   const SizedBox(height: 12),
+
+                  // Back to Login link
                   TextButton(
-                    onPressed: () {
-                      context.pop();
-                      //Pop sayesinde önceki sayfaya döner
-                    },
-                    child: const Text('Zaten hesabın var mı? Giriş yap'),
+                    onPressed: () => context.pop(), // önceki sayfaya dön
+                    child: Text(LocaleKeys.auth_login_link.tr()),
                   ),
                 ],
               ),

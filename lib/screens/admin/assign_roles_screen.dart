@@ -2,6 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:facegate/widgets/language_switcher.dart';
+
+// i18n
+import 'package:easy_localization/easy_localization.dart';
+import 'package:facegate/l10n/locale_keys.g.dart';
 
 class AssignRolesScreen extends StatefulWidget {
   const AssignRolesScreen({super.key});
@@ -20,11 +25,18 @@ class _AssignRolesScreenState extends State<AssignRolesScreen> {
 
   final TextEditingController _searchController = TextEditingController();
 
- 
-  final List<String> _roles = [
-    'Sunucu Odası Operatörü',
-    'Veri Güvenliği Uzmanı',
-  ];
+  /// Kanonik rol kodları: DB'ye BUNLAR yazılır
+  final List<String> _roleCodes = ['operator', 'security'];
+
+  /// Geriye dönük kayıtlar için (DB'de eski metinler varsa) eşleme
+  static const Map<String, String> _legacyRoleToCode = {
+    // TR
+    'Sunucu Odası Operatörü': 'operator',
+    'Veri Güvenliği Uzmanı': 'security',
+    // EN (olası eski kayıtlar)
+    'Server Room Operator': 'operator',
+    'Data Security Specialist': 'security',
+  };
 
   @override
   void initState() {
@@ -39,7 +51,7 @@ class _AssignRolesScreenState extends State<AssignRolesScreen> {
     super.dispose();
   }
 
-  //firestoredan onaylı personelleri getir, admin hariç
+  // Firestore'dan onaylı personelleri getir, admin hariç
   Future<void> _fetchApprovedPersonnel() async {
     final currentUserEmail = _auth.currentUser?.email;
 
@@ -49,53 +61,76 @@ class _AssignRolesScreenState extends State<AssignRolesScreen> {
         .get();
 
     final filtered = snapshot.docs.where((doc) {
-      final data = doc.data();
+      final data = doc.data() as Map<String, dynamic>;
       return data['email'] != currentUserEmail;
     }).toList();
 
     setState(() {
       _personnel = filtered;
-      _filteredPersonnel = filtered; 
+      _filteredPersonnel = filtered;
       _isLoading = false;
     });
   }
 
-  //Email ile filtreleme yapma
+  // Email ile filtreleme yap
   void _onSearchChanged() {
     final query = _searchController.text.toLowerCase();
 
     setState(() {
       _filteredPersonnel = _personnel.where((doc) {
         final data = doc.data() as Map<String, dynamic>;
-        final email = (data['email'] ?? '').toLowerCase();
+        final email = (data['email'] ?? '').toString().toLowerCase();
         return email.contains(query);
       }).toList();
     });
   }
 
-  //Görevi firestoreda güncellemek için
-  Future<void> _assignRole(String userId, String newRole) async {
+  // Rol kodu -> ekranda gösterilecek yerelleştirilmiş label
+  String _labelForRoleCode(String code) {
+    switch (code) {
+      case 'operator':
+        return LocaleKeys.admin_roles_operator.tr();
+      case 'security':
+        return LocaleKeys.admin_roles_security.tr();
+      default:
+        return code; // bilinmeyen kod varsa olduğu gibi göster
+    }
+  }
+
+  // DB'den gelen string'i kanonik koda çevir (eski TR/EN kayıtlar için)
+  String? _normalizeRole(dynamic raw) {
+    if (raw == null) return null;
+    final value = raw.toString();
+    if (_roleCodes.contains(value)) return value; // zaten kod
+    return _legacyRoleToCode[value]; // eski metin -> kod
+  }
+
+  // Firestore'da görevi GÜNCELLE (kanonik rol kodu yazar)
+  Future<void> _assignRole(String userId, String roleCode) async {
     await _firestore.collection('users').doc(userId).update({
-      'gorev': newRole,
+      'gorev': roleCode, // kanonik kod olarak kaydet
     });
 
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Görev başarıyla atandı.')),
+      SnackBar(content: Text(LocaleKeys.admin_roles_assigned_success.tr())),
     );
 
-    _fetchApprovedPersonnel(); 
+    _fetchApprovedPersonnel(); // listeyi yenile
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Görev Atama'),
+        // "Görev Atama" / "Assign Role"
+        title: Text(LocaleKeys.admin_roles_assign_role_title.tr()),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.go('/admin/home'),
         ),
+        actions: const [LanguageSwitcher()],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -105,42 +140,67 @@ class _AssignRolesScreenState extends State<AssignRolesScreen> {
                   padding: const EdgeInsets.all(12),
                   child: TextField(
                     controller: _searchController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email ile ara',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: LocaleKeys.common_search_by_email.tr(),
+                      prefixIcon: const Icon(Icons.search),
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                 ),
                 Expanded(
                   child: _filteredPersonnel.isEmpty
-                      ? const Center(child: Text('Sonuç bulunamadı.'))
+                      ? Center(child: Text(LocaleKeys.common_no_results.tr()))
                       : ListView.builder(
                           itemCount: _filteredPersonnel.length,
                           itemBuilder: (context, index) {
                             final userDoc = _filteredPersonnel[index];
-                            final userData = userDoc.data() as Map<String, dynamic>;
-                            final email = userData['email'] ?? 'Bilinmeyen';
-                            final currentRole = userData['gorev'] as String?;
+                            final userData =
+                                userDoc.data() as Map<String, dynamic>;
+                            final email =
+                                (userData['email'] as String?)?.trim();
                             final userId = userDoc.id;
 
+                            // DB'deki 'gorev' alanını normalize et (kod'a çevir)
+                            final currentRoleCode =
+                                _normalizeRole(userData['gorev']);
+
                             return Card(
-                              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
                               child: ListTile(
-                                title: Text(email),
-                                subtitle: Text('Mevcut Görev: ${currentRole ?? 'Atanmadı'}'),
+                                title: Text(
+                                  (email != null && email.isNotEmpty)
+                                      ? email
+                                      : LocaleKeys.common_unknown.tr(),
+                                ),
+                                subtitle: Text(
+                                  LocaleKeys.admin_roles_current_role.tr(
+                                    namedArgs: {
+                                      'role': currentRoleCode == null
+                                          ? LocaleKeys
+                                              .admin_roles_not_assigned.tr()
+                                          : _labelForRoleCode(
+                                              currentRoleCode,
+                                            ),
+                                    },
+                                  ),
+                                ),
                                 trailing: DropdownButton<String>(
-                                  value: _roles.contains(currentRole) ? currentRole : null,
-                                  hint: const Text('Görev ata'),
-                                  items: _roles.map((role) {
+                                  value: _roleCodes.contains(currentRoleCode)
+                                      ? currentRoleCode
+                                      : null,
+                                  hint: Text(
+                                      LocaleKeys.admin_roles_assign_role_hint
+                                          .tr()),
+                                  items: _roleCodes.map((code) {
                                     return DropdownMenuItem<String>(
-                                      value: role,
-                                      child: Text(role),
+                                      value: code,
+                                      child: Text(_labelForRoleCode(code)),
                                     );
                                   }).toList(),
-                                  onChanged: (selectedRole) {
-                                    if (selectedRole != null) {
-                                      _assignRole(userId, selectedRole);
+                                  onChanged: (selectedCode) {
+                                    if (selectedCode != null) {
+                                      _assignRole(userId, selectedCode);
                                     }
                                   },
                                 ),
