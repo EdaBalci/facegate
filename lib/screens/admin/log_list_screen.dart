@@ -1,12 +1,10 @@
+import 'package:facegate/widgets/translate_switcher.dart';
 import 'package:flutter/material.dart';
 import 'package:facegate/repositories/log_repository.dart';
 import 'package:go_router/go_router.dart';
-import 'package:facegate/widgets/language_switcher.dart';
-
-// i18n
 import 'package:easy_localization/easy_localization.dart';
-import 'package:intl/intl.dart';
 import 'package:facegate/l10n/locale_keys.g.dart';
+import 'package:lottie/lottie.dart';
 
 class LogListScreen extends StatefulWidget {
   const LogListScreen({super.key});
@@ -32,6 +30,20 @@ class _LogListScreenState extends State<LogListScreen> {
   bool _showFilters = false;
   // Seçilen tarih (tarih filtresi için)
   DateTime? _selectedDate;
+
+  //Tek noktadan kullanılacak Lottie loader helper'ı
+  Widget _lottieLoader({double size = 120}) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Lottie.asset(
+        'assets/animations/loader.json', 
+        repeat: true,
+        animate: true,
+        fit: BoxFit.contain,
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -85,7 +97,7 @@ class _LogListScreenState extends State<LogListScreen> {
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
       cancelText: LocaleKeys.common_cancel.tr(), // i18n
-      // locale: context.locale, // Gerek yok; MaterialApp.locale zaten set edildi.
+
     );
 
     if (pickedDate != null) {
@@ -101,7 +113,6 @@ class _LogListScreenState extends State<LogListScreen> {
     if (timestamp == null) return LocaleKeys.logs_empty.tr();
     final dt = timestamp.toDate();
     final locale = context.locale.toString(); // 'tr' | 'en'
-    // İstersen pattern'i locale'e göre değiştirebiliriz
     return DateFormat('dd.MM.yyyy HH:mm', locale).format(dt);
   }
 
@@ -113,15 +124,23 @@ class _LogListScreenState extends State<LogListScreen> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/admin/home'), // Admin paneline geri dön
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              context.pop();
+            } else {
+              context.go('/admin/home'); // fallback
+            }
+          },
         ),
-        actions: const [LanguageSwitcher()],
+        actions:  [          translate(context),
+        ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator()) // Veri yüklenirken spinner
+          ? Center(child: _lottieLoader(size: 140)) // Veri yüklenirken animasyon
           : Column(
               children: [
-                // 🔽 Filtreleme alanını açıp kapatma butonu
+                Text(LocaleKeys.logs_filter.tr()),
+                // Filtreleme alanını açıp kapatma butonu
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   child: Align(
@@ -149,7 +168,7 @@ class _LogListScreenState extends State<LogListScreen> {
                   ),
                 ),
 
-                // 🔽 Filtreleme kutuları (sadece _showFilters true ise görünür)
+                // Filtreleme kutuları (sadece _showFilters true ise görünür)
                 if (_showFilters) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -217,4 +236,7 @@ class _LogListScreenState extends State<LogListScreen> {
             ),
     );
   }
+
+
+
 }

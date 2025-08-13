@@ -1,15 +1,14 @@
 import 'package:facegate/widgets/custom_text_form_field.dart';
+import 'package:facegate/widgets/translate_switcher.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:facegate/blocs/auth/auth_bloc.dart';
 import 'package:facegate/blocs/auth/auth_event.dart';
 import 'package:facegate/blocs/auth/auth_state.dart';
-import 'package:facegate/widgets/language_switcher.dart';
-
-// i18n
 import 'package:easy_localization/easy_localization.dart';
 import 'package:facegate/l10n/locale_keys.g.dart';
+import 'package:lottie/lottie.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,6 +21,19 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>(); // validate kontrolü yapar
   final _emailController = TextEditingController(); // input değeri okumak için
   final _passwordController = TextEditingController();
+
+  Widget _lottieLoader({double size = 40}) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Lottie.asset(
+        'assets/animations/loader.json', 
+        repeat: true,
+        animate: true,
+        fit: BoxFit.contain,
+      ),
+    );
+  }
 
   // form geçerliyse AuthLoginRequested eventi AuthBloc'a gönderilir
   void _onLoginPressed() {
@@ -49,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
       appBar: AppBar(
         // "Giriş Yap" / "Sign In"
         title: Text(LocaleKeys.auth_login_title.tr()),
-        actions: const [LanguageSwitcher()],
+        actions: [translate(context,)],
         centerTitle: true,
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
@@ -104,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   // Login button / spinner
                   isLoading
-                      ? const CircularProgressIndicator()
+                      ? _lottieLoader(size: 50)
                       : ElevatedButton(
                           onPressed: _onLoginPressed,
                           child: Text(LocaleKeys.auth_login_button.tr()),

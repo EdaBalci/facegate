@@ -1,12 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:facegate/widgets/translate_switcher.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:facegate/widgets/language_switcher.dart';
-
-// i18n
 import 'package:easy_localization/easy_localization.dart';
 import 'package:facegate/l10n/locale_keys.g.dart';
+import 'package:lottie/lottie.dart';
 
 class AssignRolesScreen extends StatefulWidget {
   const AssignRolesScreen({super.key});
@@ -25,10 +24,10 @@ class _AssignRolesScreenState extends State<AssignRolesScreen> {
 
   final TextEditingController _searchController = TextEditingController();
 
-  /// Kanonik rol kodları: DB'ye BUNLAR yazılır
+  //dbye bunlar yazılır
   final List<String> _roleCodes = ['operator', 'security'];
 
-  /// Geriye dönük kayıtlar için (DB'de eski metinler varsa) eşleme
+  //Geriye dönük kayıtlar için (DB'de eski metinler varsa) eşleme
   static const Map<String, String> _legacyRoleToCode = {
     // TR
     'Sunucu Odası Operatörü': 'operator',
@@ -37,6 +36,24 @@ class _AssignRolesScreenState extends State<AssignRolesScreen> {
     'Server Room Operator': 'operator',
     'Data Security Specialist': 'security',
   };
+
+  //Rol atama esnasında overlay/mini-loader yönetimi için bayraklar
+  bool _isAssigning = false;
+  String? _savingUserId;
+
+  //Tek yerden kullanacağımız Lottie loader helper'ı
+  Widget _lottieLoader({double size = 120}) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Lottie.asset(
+        'assets/animations/loader.json', 
+        repeat: true,
+        animate: true,
+        fit: BoxFit.contain,
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -61,7 +78,7 @@ class _AssignRolesScreenState extends State<AssignRolesScreen> {
         .get();
 
     final filtered = snapshot.docs.where((doc) {
-      final data = doc.data() as Map<String, dynamic>;
+      final data = doc.data();
       return data['email'] != currentUserEmail;
     }).toList();
 
@@ -85,7 +102,7 @@ class _AssignRolesScreenState extends State<AssignRolesScreen> {
     });
   }
 
-  // Rol kodu -> ekranda gösterilecek yerelleştirilmiş label
+  // Rol kodu, ekranda gösterilecek yerelleştirilmiş label
   String _labelForRoleCode(String code) {
     switch (code) {
       case 'operator':
@@ -105,112 +122,159 @@ class _AssignRolesScreenState extends State<AssignRolesScreen> {
     return _legacyRoleToCode[value]; // eski metin -> kod
   }
 
-  // Firestore'da görevi GÜNCELLE (kanonik rol kodu yazar)
+  // Firestore'da görevi güncelle (kanonik rol kodu yazar)
   Future<void> _assignRole(String userId, String roleCode) async {
-    await _firestore.collection('users').doc(userId).update({
-      'gorev': roleCode, // kanonik kod olarak kaydet
+    setState(() {
+      _isAssigning = true;   // overlay'i aç
+      _savingUserId = userId; // satır içi mini loader için
     });
 
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(LocaleKeys.admin_roles_assigned_success.tr())),
-    );
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'gorev': roleCode, // kanonik kod olarak kaydet
+      });
 
-    _fetchApprovedPersonnel(); // listeyi yenile
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(LocaleKeys.admin_roles_assigned_success.tr())),
+      );
+
+      await _fetchApprovedPersonnel(); // listeyi yenile
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(LocaleKeys.common_error_generic.tr())),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isAssigning = false; // overlay'i kapat
+          _savingUserId = null; 
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        // "Görev Atama" / "Assign Role"
-        title: Text(LocaleKeys.admin_roles_assign_role_title.tr()),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/admin/home'),
-        ),
-        actions: const [LanguageSwitcher()],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      labelText: LocaleKeys.common_search_by_email.tr(),
-                      prefixIcon: const Icon(Icons.search),
-                      border: const OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: _filteredPersonnel.isEmpty
-                      ? Center(child: Text(LocaleKeys.common_no_results.tr()))
-                      : ListView.builder(
-                          itemCount: _filteredPersonnel.length,
-                          itemBuilder: (context, index) {
-                            final userDoc = _filteredPersonnel[index];
-                            final userData =
-                                userDoc.data() as Map<String, dynamic>;
-                            final email =
-                                (userData['email'] as String?)?.trim();
-                            final userId = userDoc.id;
-
-                            // DB'deki 'gorev' alanını normalize et (kod'a çevir)
-                            final currentRoleCode =
-                                _normalizeRole(userData['gorev']);
-
-                            return Card(
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 6),
-                              child: ListTile(
-                                title: Text(
-                                  (email != null && email.isNotEmpty)
-                                      ? email
-                                      : LocaleKeys.common_unknown.tr(),
-                                ),
-                                subtitle: Text(
-                                  LocaleKeys.admin_roles_current_role.tr(
-                                    namedArgs: {
-                                      'role': currentRoleCode == null
-                                          ? LocaleKeys
-                                              .admin_roles_not_assigned.tr()
-                                          : _labelForRoleCode(
-                                              currentRoleCode,
-                                            ),
-                                    },
-                                  ),
-                                ),
-                                trailing: DropdownButton<String>(
-                                  value: _roleCodes.contains(currentRoleCode)
-                                      ? currentRoleCode
-                                      : null,
-                                  hint: Text(
-                                      LocaleKeys.admin_roles_assign_role_hint
-                                          .tr()),
-                                  items: _roleCodes.map((code) {
-                                    return DropdownMenuItem<String>(
-                                      value: code,
-                                      child: Text(_labelForRoleCode(code)),
-                                    );
-                                  }).toList(),
-                                  onChanged: (selectedCode) {
-                                    if (selectedCode != null) {
-                                      _assignRole(userId, selectedCode);
-                                    }
-                                  },
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                ),
-              ],
+    //Overlay için Scaffold'ı Stack içine aldık
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: AppBar(
+            // "Görev Atama" / "Assign Role"
+            title: Text(LocaleKeys.admin_roles_assign_role_title.tr()),
+            centerTitle: true,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                if (Navigator.of(context).canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/admin/home');
+                }
+              },
             ),
+            actions: [translate(context)],
+          ),
+          body: _isLoading
+              ? Center(child: _lottieLoader(size: 140)) 
+              : Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          labelText: LocaleKeys.common_search_by_email.tr(),
+                          prefixIcon: const Icon(Icons.search),
+                          border: const OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: _filteredPersonnel.isEmpty
+                          ? Center(child: Text(LocaleKeys.common_no_results.tr()))
+                          : ListView.builder(
+                              itemCount: _filteredPersonnel.length,
+                              itemBuilder: (context, index) {
+                                final userDoc = _filteredPersonnel[index];
+                                final userData =
+                                    userDoc.data() as Map<String, dynamic>;
+                                final email =
+                                    (userData['email'] as String?)?.trim();
+                                final userId = userDoc.id;
+
+                                // DB'deki 'gorev' alanını normalize et (kod'a çevir)
+                                final currentRoleCode =
+                                    _normalizeRole(userData['gorev']);
+
+                                // bu satır için kaydetme sürüyorsa mini loader göster
+                                final isRowSaving = _savingUserId == userId;
+
+                                return Card(
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 6),
+                                  child: ListTile(
+                                    title: Text(
+                                      (email != null && email.isNotEmpty)
+                                          ? email
+                                          : LocaleKeys.common_unknown.tr(),
+                                    ),
+                                    subtitle: Text(
+                                      LocaleKeys.admin_roles_current_role.tr(
+                                        namedArgs: {
+                                          'role': currentRoleCode == null
+                                              ? LocaleKeys
+                                                  .admin_roles_not_assigned
+                                                  .tr()
+                                              : _labelForRoleCode(
+                                                  currentRoleCode,
+                                                ),
+                                        },
+                                      ),
+                                    ),
+                                    trailing: isRowSaving
+                                        ? _lottieLoader(size: 36) //satır içi mini loader
+                                        : DropdownButton<String>(
+                                            value: _roleCodes
+                                                    .contains(currentRoleCode)
+                                                ? currentRoleCode
+                                                : null,
+                                            hint: Text(LocaleKeys
+                                                .admin_roles_assign_role_hint
+                                                .tr()),
+                                            items: _roleCodes.map((code) {
+                                              return DropdownMenuItem<String>(
+                                                value: code,
+                                                child:
+                                                    Text(_labelForRoleCode(code)),
+                                              );
+                                            }).toList(),
+                                            onChanged: (selectedCode) {
+                                              if (selectedCode != null) {
+                                                _assignRole(userId, selectedCode);
+                                              }
+                                            },
+                                          ),
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+        ),
+
+        //Tam ekran overlay (rol atama esnasında)
+        if (_isAssigning)
+          Positioned.fill(
+            child: ColoredBox(
+              color: Colors.black54,
+              child: Center(child: _lottieLoader(size: 140)),
+            ),
+          ),
+      ],
     );
   }
 }

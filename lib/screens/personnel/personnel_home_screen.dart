@@ -1,9 +1,7 @@
 import 'package:facegate/utils/helpers.dart';
+import 'package:facegate/widgets/translate_switcher.dart';
 import 'package:flutter/material.dart';
 import 'package:facegate/repositories/log_repository.dart';
-import 'package:facegate/widgets/language_switcher.dart';
-
-// i18n
 import 'package:easy_localization/easy_localization.dart';
 import 'package:facegate/l10n/locale_keys.g.dart';
 
@@ -41,7 +39,7 @@ class _PersonnelHomeScreenState extends State<PersonnelHomeScreen> {
         title: Text(LocaleKeys.personnel_panel_title.tr()),
         centerTitle: true,
         actions: [
-        const LanguageSwitcher(),
+        translate(context),
         IconButton(
         tooltip: LocaleKeys.auth_logout.tr(),
         icon: const Icon(Icons.logout),

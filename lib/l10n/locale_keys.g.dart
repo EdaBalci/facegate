@@ -67,4 +67,6 @@ abstract class  LocaleKeys {
   static const errors_unknown = 'errors.unknown';
   static const errors = 'errors';
 
+  static var common_error_generic;
+
 }

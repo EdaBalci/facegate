@@ -10,6 +10,7 @@ import 'package:facegate/screens/personnel/personnel_home_screen.dart';
 import 'package:facegate/screens/admin/log_list_screen.dart';
 
 
+
 class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: '/', //uygulama ilk açıldığında açılacak sayfa
@@ -51,8 +52,7 @@ class AppRouter {
       path: '/admin/assign-roles',
       builder: (context, state) => const AssignRolesScreen(),
     ),
-
-
+   
 
     ],
   );

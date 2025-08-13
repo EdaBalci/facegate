@@ -1,14 +1,13 @@
+import 'package:facegate/widgets/translate_switcher.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:facegate/blocs/auth/auth_bloc.dart';
 import 'package:facegate/blocs/auth/auth_event.dart';
 import 'package:facegate/blocs/auth/auth_state.dart';
-import 'package:facegate/widgets/language_switcher.dart';
-
-// i18n
 import 'package:easy_localization/easy_localization.dart';
 import 'package:facegate/l10n/locale_keys.g.dart';
+import 'package:lottie/lottie.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -21,6 +20,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  //Tek noktadan kullanılacak Lottie loader helper'ı
+  Widget _lottieLoader({double size = 50}) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Lottie.asset(
+        'assets/animations/loader.json',
+        repeat: true,
+        animate: true,
+        fit: BoxFit.contain,
+      ),
+    );
+  }
 
   void _onRegisterPressed() {
     // AuthRegisterRequested event’i AuthBloc'a gönderilir (Firebase kaydı başlatır)
@@ -47,7 +60,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       appBar: AppBar(
         // "Kayıt Ol" / "Register"
         title: Text(LocaleKeys.auth_register_title.tr()),
-        actions: const [LanguageSwitcher()],
+        actions: [translate(context)],
         centerTitle: true,
       ),
       body: BlocConsumer<AuthBloc, AuthState>(
@@ -100,7 +113,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   // Register button / spinner
                   isLoading
-                      ? const CircularProgressIndicator()
+                      ? _lottieLoader(size: 50)
                       : ElevatedButton(
                           onPressed: _onRegisterPressed,
                           child: Text(LocaleKeys.auth_register_button.tr()),

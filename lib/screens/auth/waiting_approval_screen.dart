@@ -1,8 +1,6 @@
 import 'package:facegate/utils/helpers.dart';
+import 'package:facegate/widgets/translate_switcher.dart';
 import 'package:flutter/material.dart';
-import 'package:facegate/widgets/language_switcher.dart';
-
-// i18n
 import 'package:easy_localization/easy_localization.dart';
 import 'package:facegate/l10n/locale_keys.g.dart';
 
@@ -13,10 +11,10 @@ class WaitingApprovalScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // Başlık gizli kalsın (senin mevcut tasarımın)
+
         title: const SizedBox.shrink(),
         actions: [
-          LanguageSwitcher(),
+          translate(context),
           IconButton(
             tooltip: LocaleKeys.auth_logout.tr(),
             icon: const Icon(Icons.logout),
