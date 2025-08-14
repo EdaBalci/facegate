@@ -1,5 +1,6 @@
 import 'package:facegate/screens/admin/assign_roles_screen.dart';
 import 'package:facegate/screens/admin/personnel_approval_screen.dart';
+import 'package:facegate/screens/personnel/personnel_profile_screen.dart';
 import 'package:facegate/screens/splash/splash_screen.dart';
 import 'package:facegate/screens/auth/login_screen.dart';
 import 'package:go_router/go_router.dart';
@@ -52,7 +53,11 @@ class AppRouter {
       path: '/admin/assign-roles',
       builder: (context, state) => const AssignRolesScreen(),
     ),
-   
+    GoRoute(
+      path: '/personnel/profile',
+      name: 'personnelProfile',
+      builder: (context, state) => const PersonnelProfileScreen(),
+    ),
 
     ],
   );

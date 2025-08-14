@@ -34,7 +34,7 @@
       "operator": "Server Room Operator",
       "security": "Data Security Specialist",
       "assign_role": "Assign Role",
-      "current_role": "Current Role: {role}",
+      "current_role": "Current Role",
       "assign_role_title": "Assign Role",
       "assign_role_hint": "Assign role",
       "not_assigned": "Not assigned",
@@ -69,5 +69,14 @@
   "errors": {
     "network": "Network error",
     "unknown": "Unexpected error"
+  },
+  
+  "profile": {
+    "title": "Profile",
+    "duty_title": "Assignment",
+    "change_photo": "Change photo",
+    "photo_updated": "Profile photo updated"
   }
+  
+
 }

@@ -143,7 +143,7 @@ class _AssignRolesScreenState extends State<AssignRolesScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(LocaleKeys.common_error_generic.tr())),
+        SnackBar(content: Text("$e")),
       );
     } finally {
       if (mounted) {

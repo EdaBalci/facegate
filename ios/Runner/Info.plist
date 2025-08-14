@@ -50,5 +50,10 @@
    		<string>en</string>
     	<string>tr</string>
     </array>
+	<key>NSPhotoLibraryUsageDescription</key>
+<string>Profil fotoğrafını seçmek için fotoğraflara erişmem gerekiyor.</string>
+<key>NSCameraUsageDescription</key>
+<string>Profil fotoğrafını çekmek için kameraya erişmem gerekiyor.</string>
+
 </dict>
 </plist>

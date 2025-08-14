@@ -66,7 +66,10 @@ abstract class  LocaleKeys {
   static const errors_network = 'errors.network';
   static const errors_unknown = 'errors.unknown';
   static const errors = 'errors';
-
-  static var common_error_generic;
+  static const profile_title = 'profile.title';
+  static const profile_duty_title = 'profile.duty_title';
+  static const profile_change_photo = 'profile.change_photo';
+  static const profile_photo_updated = 'profile.photo_updated';
+  static const profile = 'profile';
 
 }

@@ -50,7 +50,7 @@ class CodegenLoader extends AssetLoader{
       "operator": "Sunucu Odası Operatörü",
       "security": "Veri Güvenliği Uzmanı",
       "assign_role": "Rol Ata",
-      "current_role": "Mevcut Rol: {role}",
+      "current_role": "Mevcut Rol",
       "assign_role_title": "Görev Atama",
       "assign_role_hint": "Görev ata",
       "not_assigned": "Atanmadı",
@@ -85,6 +85,12 @@ class CodegenLoader extends AssetLoader{
   "errors": {
     "network": "Ağ hatası",
     "unknown": "Beklenmeyen hata"
+  },
+  "profile": {
+    "title": "Profil",
+    "duty_title": "Görev",
+    "change_photo": "Fotoğrafı değiştir",
+    "photo_updated": "Profil fotoğrafı güncellendi"
   }
 };
 static const Map<String,dynamic> _en = {
@@ -123,7 +129,7 @@ static const Map<String,dynamic> _en = {
       "operator": "Server Room Operator",
       "security": "Data Security Specialist",
       "assign_role": "Assign Role",
-      "current_role": "Current Role: {role}",
+      "current_role": "Current Role",
       "assign_role_title": "Assign Role",
       "assign_role_hint": "Assign role",
       "not_assigned": "Not assigned",
@@ -158,6 +164,12 @@ static const Map<String,dynamic> _en = {
   "errors": {
     "network": "Network error",
     "unknown": "Unexpected error"
+  },
+  "profile": {
+    "title": "Profile",
+    "duty_title": "Assignment",
+    "change_photo": "Change photo",
+    "photo_updated": "Profile photo updated"
   }
 };
 static const Map<String, Map<String,dynamic>> mapLocales = {"tr": _tr, "en": _en};

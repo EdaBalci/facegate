@@ -5,6 +5,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:facegate/l10n/locale_keys.g.dart';
+import 'package:facegate/widgets/webview_page.dart';
+
 
 // Eğer kullanıcı AuthBloc üzerinden AuthSuccess("admin") durumu ile giriş yaptıysa
 // GoRouter bu sayfaya yönlendirir
@@ -93,6 +95,34 @@ class AdminHomeScreen extends StatelessWidget {
                 ),
               ),
             ),
+
+            SizedBox(height: 16.h),
+            // pub.dev WebView butonu
+      ElevatedButton.icon(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const WebViewPage(
+                title: 'pub.dev',
+                initialUrl: 'https://pub.dev/',
+              ),
+            ),
+          );
+        },
+        icon: Icon(Icons.public, size: 20.r),
+        label: Text(
+          'pub.dev',
+          style: TextStyle(fontSize: 16.sp),
+        ),
+        style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+        ),
+      ),
+
+
           ],
         ),
       ),

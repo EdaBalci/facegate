@@ -33,7 +33,7 @@
       "operator": "Sunucu Odası Operatörü",
       "security": "Veri Güvenliği Uzmanı",
       "assign_role": "Rol Ata",
-      "current_role": "Mevcut Rol: {role}",
+      "current_role": "Mevcut Rol",
       "assign_role_title": "Görev Atama",
       "assign_role_hint": "Görev ata",
       "not_assigned": "Atanmadı",
@@ -68,5 +68,11 @@
   "errors": {
     "network": "Ağ hatası",
     "unknown": "Beklenmeyen hata"
+  },
+  "profile": {
+    "title": "Profil",
+    "duty_title": "Görev",
+    "change_photo": "Fotoğrafı değiştir",
+    "photo_updated": "Profil fotoğrafı güncellendi"
   }
 }
