@@ -4,12 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:facegate/repositories/log_repository.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:facegate/l10n/locale_keys.g.dart';
-
-// EKLENDİ: profil butonu için gerekli importlar
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:go_router/go_router.dart';
-import 'package:facegate/repositories/user_repository.dart';
-import 'package:facegate/widgets/user_avatar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:facegate/services/local_avatar_store.dart';
+import 'package:facegate/widgets/user_avatar_svg.dart';
 
 /// Eğer kullanıcı AuthBloc üzerinden AuthSuccess("personnel") durumu ile giriş yaptıysa
 class PersonnelHomeScreen extends StatefulWidget {
@@ -21,8 +20,7 @@ class PersonnelHomeScreen extends StatefulWidget {
 
 class _PersonnelHomeScreenState extends State<PersonnelHomeScreen> {
   final LogRepository _logRepository = LogRepository(); // firestore'a log yazmak için
-  // EKLENDİ: users/{uid} belgesini dinlemek ve avatar göstermek için
-  final UserRepository _userRepository = UserRepository(); // profil/görev/rol stream
+  // DEĞİŞTİ: avatar için artık Firestore stream değil, Hive kullanılacak (UserRepository gerekmiyor)
 
   @override
   void initState() {
@@ -42,35 +40,32 @@ class _PersonnelHomeScreenState extends State<PersonnelHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final uid = FirebaseAuth.instance.currentUser!.uid; // lokal avatar için uid
+
     return Scaffold(
       appBar: AppBar(
         // "Personel Paneli" / "Personnel Panel"
         title: Text(LocaleKeys.personnel_panel_title.tr()),
         centerTitle: true,
         actions: [
-         
           translate(context),
 
-          //Profil butonu (avatar). users/{uid} Firestore belgesini canlı dinler
-          StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-            stream: _userRepository.userDocStream(),
-            builder: (context, snapshot) {
-              final data = snapshot.data?.data();
-              final String? photoUrl = data?['photoUrl'] as String?;
-              final int? photoVersion = data?['photoVersion'] as int?;
+          // Profil butonu (avatar). Lokal (Hive) depodan yolu dinler, profil sayfasına gider
+          ValueListenableBuilder(
+            valueListenable: LocalAvatarStore.listenableFor(uid),
+            builder: (context, box, _) {
+              final path = LocalAvatarStore.getPhotoPath(uid);
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: UserAvatar(
-                  photoUrl: photoUrl,
-                  photoVersion: photoVersion, 
-                  size: 32, 
+                child: UserAvatarSvg(
+                  localPath: path, // varsa lokaldeki foto yoksa default svg
+                  size: 32,      
                   onTap: () => context.push('/personnel/profile'),
                 ),
               );
             },
           ),
 
-   
           IconButton(
             tooltip: LocaleKeys.auth_logout.tr(),
             icon: const Icon(Icons.logout),

@@ -11,6 +11,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:facegate/l10n/codegen_loader.g.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:facegate/services/local_avatar_store.dart';
 
 
 
@@ -27,6 +29,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await LocalAvatarStore.init(); //Hive box açılır
     await analytics.logEvent(name: 'app_start');
      // Pass all uncaught "fatal" errors from the framework to Crashlytics
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
